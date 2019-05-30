@@ -8,18 +8,20 @@ class FragmentProtocol(object):
     |           DATA        | FRAGMENT FLAG |
     |   max_packet_size-1   |     1         |
     """
-    def __init__(self, max_packet_size=20, encoding='utf-8'):
+    def __init__(self, max_packet_size=1024, encoding='utf-8'):
         self.max_packet_size = max_packet_size
         self.encoding = encoding
         self.fragmented_flag = 1
 
     def encode(self, msg):
+        print("Encoding: {}".format(msg))
+        assert isinstance(msg, str) , "Type of msg should be str: {}".format(type(msg))
         return bytes(msg, self.encoding)
 
     def get_messages_to_send(self, msg):
         if not isinstance(msg, str):
             msg = json.dumps(msg)
-        
+                
         msg_bytes = bytearray(self.encode(msg))
         fragments = []
         if len(msg_bytes) <= (self.max_packet_size-1):
@@ -41,7 +43,7 @@ class FragmentProtocol(object):
         return fragments
 
     def decode(self, msg_bytes):
-        msg = msg_bytes.decode(self.encoding).strip()
+        msg = str(msg_bytes.decode(self.encoding)).strip()
         if msg[0] == "{" or msg[0] == "[":
             msg = json.loads(msg)
         
@@ -86,7 +88,7 @@ class FragmentProtocol(object):
             data_b += data # concatenate data
             if (flag != self.fragmented_flag):
                 break
-        
+                
         data = self.decode(bytes(data_b))
         return data, address
 

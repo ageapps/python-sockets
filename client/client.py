@@ -1,8 +1,7 @@
 import socket
-import sys
-
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 from protocol import BasicProtocol
-
 
 class Client(object):
 
@@ -23,7 +22,7 @@ class Client(object):
         self.client_socket = s
         receiver = s.recvfrom if udp else s.recv
         self.protocol.set_receiver(receiver)
-
+ 
 
     def send_message(self, message):
         fragments = self.protocol.get_messages_to_send(message)

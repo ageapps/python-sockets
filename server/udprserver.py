@@ -54,6 +54,7 @@ class UDPRServer(object):
             dict{data: Object, code: int} -- data and response code
             address -- addres from sender
         """
+
         msg, address = self.protocol.receive()
 
         if send_answer:

@@ -25,7 +25,7 @@ class HeaderProtocol(object):
         fragment = self.encode(values)
         if self.debug:
             print("Sending fragment: {}".format(fragment))
-        return fragment
+        return [fragment]
 
     def decode(self, msg_bytes):
         assert len(msg_bytes) == self.header_size, "Message received not correct size: {} | should be: {}".format(len(msg_bytes), self.header_size)
@@ -34,7 +34,7 @@ class HeaderProtocol(object):
 
     def receive_packet(self):
         if not self.receiver:
-            raise Exception("There was no receiver configured")
+            raise Exception("There is no receiver configured")
             return
         
         result = self.receiver(self.max_packet_size)
@@ -60,7 +60,19 @@ class HeaderProtocol(object):
         data = self.decode(msg_bytes)
         return data, address
 
+    def send(self, step, weights):
+        if not self.sender:
+            raise Exception("There is no sender configured")
+            return
+        values = []
+        values.append(step)
+        values.extend(weights)
+        message = self.get_messages_to_send(values)[0]
+        return self.sender(message)
 
     def set_receiver(self, f_receive):
         self.receiver =f_receive
+
+    def set_sender(self, f_send):
+        self.sender =f_send
 

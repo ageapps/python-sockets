@@ -71,7 +71,6 @@ class FragmentProtocol(object):
         data_b = bytearray()
         address = None
         while True:
-            # get header
             msg_bytes, address = self.receive_packet()
             if not len(msg_bytes):
                 raise Exception("Error receiving packet: {}".format(msg_bytes))

@@ -1,17 +1,18 @@
 import json
 
-
 class BasicProtocol(object):
     """ Basic protocol based on sending 
     """
 
-    def __init__(self, header_size=20, encoding='utf-8'):
+    def __init__(self, header_size=20, encoding='utf-8', debug=False):
         self.header_size = header_size
         self.encoding = encoding
+        self.debug = debug
 
     def get_formated_message(self, msg):
         msg_len = str(len(msg))
-        print("Encoding message | length:{} data:{}".format(msg_len, msg))
+        if self.debug:
+            print("Encoding message | length:{} data:{}".format(msg_len, msg))
         if len(msg_len) > self.header_size:
             print("Message too long | Message: {}".format(msg))
             return ""

@@ -1,5 +1,4 @@
 import json
-
 class FragmentProtocol(object):
     """ Protocol based on  max_packet_size in bytes
 
@@ -8,13 +7,15 @@ class FragmentProtocol(object):
     |           DATA        | FRAGMENT FLAG |
     |   max_packet_size-1   |     1         |
     """
-    def __init__(self, max_packet_size=1024, encoding='utf-8'):
+    def __init__(self, max_packet_size=1024, encoding='utf-8', debug=False):
         self.max_packet_size = max_packet_size
         self.encoding = encoding
         self.fragmented_flag = 1
+        self.debug = debug
 
     def encode(self, msg):
-        print("Encoding: {}".format(msg))
+        if self.debug:
+            print("Encoding: {}".format(msg))
         assert isinstance(msg, str) , "Type of msg should be str: {}".format(type(msg))
         return bytes(msg, self.encoding)
 
@@ -38,8 +39,9 @@ class FragmentProtocol(object):
                 assert (len(bytes_to_send) <= self.max_packet_size), "Size of fragment is not correct".format(len(bytes_to_send))
                 fragments.append(bytes(bytes_to_send))
                 msg_bytes = msg_bytes[(self.max_packet_size-1):]
-
-        print("Sending fragments: {}".format(fragments))
+        
+        if self.debug:
+            print("Sending fragments: {}".format(fragments))
         return fragments
 
     def decode(self, msg_bytes):
@@ -76,7 +78,8 @@ class FragmentProtocol(object):
                 return
             
             msg_array = bytearray(msg_bytes)
-            print("Received | bytes:{} | data:{}".format(len(msg_array), msg_bytes))
+            if self.debug:
+                print("Received | bytes:{} | data:{}".format(len(msg_array), msg_bytes))
             
             flag = 0
             if len(msg_array) == self.max_packet_size:

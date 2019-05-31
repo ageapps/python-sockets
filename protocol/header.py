@@ -10,11 +10,12 @@ class HeaderProtocol(object):
     |           DATA        | FRAGMENT FLAG |
     |   max_packet_size-1   |     1         |
     """
-    def __init__(self, header_mask='! B i i i i i i', encoding='utf-8'):
+    def __init__(self, header_mask='! B i i i i i i', encoding='utf-8', debug=False):
         self.fragmented_flag = 1
         self.header_mask = header_mask
         self.header_elements = len(re.sub('[^A-Za-z?]+', '', header_mask))
         self.header_size = struct.calcsize(header_mask)
+        self.debug = debug
 
     def encode(self, values):
         assert (self.header_elements == len(values)), "Input values are not the correct size: {} | should be: {}".format(len(values), self.header_elements) 
@@ -22,7 +23,8 @@ class HeaderProtocol(object):
 
     def get_messages_to_send(self, values):
         fragment = self.encode(values)
-        print("Sending fragment: {}".format(fragment))
+        if self.debug:
+            print("Sending fragment: {}".format(fragment))
         return fragment
 
     def decode(self, msg_bytes):
@@ -43,7 +45,8 @@ class HeaderProtocol(object):
         else:
             msg_bytes = result
         
-        print("Received: {}".format(msg_bytes))
+        if self.debug:
+            print("Received: {}".format(msg_bytes))
         return msg_bytes, address
 
     def receive(self):

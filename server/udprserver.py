@@ -1,10 +1,9 @@
-from protocol import BasicProtocol
-from protocol import code
 import socket
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
-
+from protocol import BasicProtocol
+from protocol import code
 
 class UDPRServer(object):
     '''UDP Reliable Server
@@ -17,9 +16,11 @@ class UDPRServer(object):
         protocol {Protocol} -- Protocol to be used from the server (default: {BasicProtocol()})
     '''
 
-    def __init__(self, port,  host="127.0.0.1", protocol=BasicProtocol()):
+    def __init__(self, port,  host="127.0.0.1", debug=False, protocol=None):
         self.host = host
         self.port = port
+        if protocol is None:
+            protocol = BasicProtocol(debug=debug)
         self.protocol = protocol
 
     def start(self):
@@ -42,7 +43,7 @@ class UDPRServer(object):
             }
         return msg
 
-    def receive_message(self, send_answer=False, answer_msg=None):
+    def receive_message(self, send_answer=False, answer_msg=''):
         """receive message
 
         Keyword Arguments:
@@ -56,9 +57,7 @@ class UDPRServer(object):
         msg, address = self.protocol.receive()
 
         if send_answer:
-            if answer_msg is None:
-                answer_msg = self.get_formated_message('', '', code.CODE_OK)
-            sent = self.send_message(answer_msg, address, wait_answer=False)
+            sent = self.send_message(answer_msg, address, wait_answer=False, code=code.CODE_OK)
             if not sent:
                 raise Exception("Error sending answer")
         
@@ -67,7 +66,7 @@ class UDPRServer(object):
     def send_message(self, msg, destination, wait_answer=False, key='', code=0):
         msg = self.get_formated_message(msg, key, code)
         fragments = self.protocol.get_messages_to_send(msg)
-        correct = False
+        correct = True
         for msg in fragments:
             try:
                 b_sent = self.server_socket.sendto(msg, destination)

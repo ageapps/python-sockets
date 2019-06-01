@@ -7,7 +7,7 @@ from protocol import BasicProtocol
 
 class Client(object):
 
-    def __init__(self, port, host="127.0.0.1", udp=False, protocol=None, debug=False, timeout=5):
+    def __init__(self, port: int, host="127.0.0.1", udp=False, protocol=None, debug=False, timeout=5):
         self.host = host
         self.port = port
         self.udp = udp
@@ -20,13 +20,13 @@ class Client(object):
             s.settimeout(timeout)
             if not udp:
                 s.connect((self.host, self.port))
+            print('Starting socket | protocol: ' + self.protocol.__class__.__name__)
         except socket.error as err:
             print('Failed to start socket | Error: {}'.format(err))
             raise
 
         self.client_socket = s
-        receiver = s.recvfrom if udp else s.recv
-        self.protocol.set_receiver(receiver)
+        self.receiver_fn = s.recvfrom if udp else s.recv
 
     def send_message(self, message, wait_answer=False):
         fragments = self.protocol.get_messages_to_send(message)
@@ -48,4 +48,4 @@ class Client(object):
             return answer
 
     def receive_message(self):
-        return self.protocol.receive()
+        return self.protocol.receive_from_socket(self.receiver_fn)

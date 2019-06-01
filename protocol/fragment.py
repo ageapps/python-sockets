@@ -1,4 +1,5 @@
 import json
+import socket
 class FragmentProtocol(object):
     """ Protocol based on  max_packet_size in bytes
 
@@ -52,12 +53,8 @@ class FragmentProtocol(object):
         return msg
     
 
-    def receive_packet(self):
-        if not self.receiver:
-            raise Exception("There was no receiver configured")
-            return
-        
-        result = self.receiver(self.max_packet_size)
+    def receive_packet(self, receive_fn):
+        result = receive_fn(self.max_packet_size)
 
         address = None
         if isinstance(result, tuple):
@@ -67,12 +64,21 @@ class FragmentProtocol(object):
         
         return msg, address
 
-    def receive(self):
+    def receive_from_socket(self, receive_fn):
+        """receive message using the given function by the client/server
+        
+        Raises:
+            Exception: Receiving
+        
+        Returns:
+            (data, address)
+        """
+
         data_b = bytearray()
         address = None
         while True:
             # get header
-            msg_bytes, address = self.receive_packet()
+            msg_bytes, address = self.receive_packet(receive_fn)
             if not len(msg_bytes):
                 raise Exception("Error receiving the header")
                 return
@@ -94,7 +100,3 @@ class FragmentProtocol(object):
                 
         data = self.decode(bytes(data_b))
         return data, address
-
-
-    def set_receiver(self, f_receive):
-        self.receiver =f_receive

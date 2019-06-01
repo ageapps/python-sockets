@@ -32,12 +32,8 @@ class HeaderProtocol(object):
         return struct.unpack(self.header_mask, msg_bytes)
     
 
-    def receive_packet(self):
-        if not self.receiver:
-            raise Exception("There is no receiver configured")
-            return
-        
-        result = self.receiver(self.max_packet_size)
+    def receive_packet(self, receive_fn):
+        result = receive_fn(self.max_packet_size)
 
         address = None
         if isinstance(result, tuple):
@@ -49,30 +45,22 @@ class HeaderProtocol(object):
             print("Received: {}".format(msg_bytes))
         return msg_bytes, address
 
-    def receive(self):
+    def receive_from_socket(self, receive_fn):
+        """receive message using the given function by the client/server
+        
+        Raises:
+            Exception: Receiving
+        
+        Returns:
+            (data, address)
+        """
+
         address = None
 
-        msg_bytes, address = self.receive_packet()
+        msg_bytes, address = self.receive_packet(receive_fn)
         if not len(msg_bytes):
             raise Exception("Error receiving the header")
             return
 
         data = self.decode(msg_bytes)
         return data, address
-
-    def send(self, step, weights):
-        if not self.sender:
-            raise Exception("There is no sender configured")
-            return
-        values = []
-        values.append(step)
-        values.extend(weights)
-        message = self.get_messages_to_send(values)[0]
-        return self.sender(message)
-
-    def set_receiver(self, f_receive):
-        self.receiver =f_receive
-
-    def set_sender(self, f_send):
-        self.sender =f_send
-

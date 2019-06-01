@@ -3,7 +3,9 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 from client import Client
-from protocol import FragmentProtocol
+from protocol import BasicProtocol
+from protocol import code
+
 
 HOST = "localhost"
 PORT = 12344
@@ -11,12 +13,35 @@ QUEUE_SIZE = 5
 UDP_CLIENT = True
 HEADER_SIZE = 20
 
-proto = FragmentProtocol()
-socket_adapter = Client(PORT, host=HOST, udp=UDP_CLIENT, protocol=proto)
-socket_adapter.send_message("Hello server")
 
-print(socket_adapter.receive_message())
+def get_formated_message(msg, key, code=0):
+    msg = {
+        'data': msg,
+        'key': key,
+        'code': code
+        }
+    return msg
 
-while True:
-    time.sleep(2)
-    socket_adapter.send_message({ "name": "Time", "time": time.time()})
+
+def main():
+    proto = BasicProtocol()
+    socket_adapter = Client(PORT, host=HOST, udp=UDP_CLIENT, protocol=proto)
+    hello_message = get_formated_message('Hello server','setup')
+    answer = socket_adapter.send_message(hello_message, wait_answer=True)
+    if answer['code'] != code.CODE_OK:
+        print('Error in response')
+        sys.exit()
+    elif answer['code'] == code.CODE_OK:
+        print('Successfully joined | server: {}:{}'.format(HOST,PORT))
+
+    while True:
+        time.sleep(2)
+        new_msg = get_formated_message( time.time(), 'time')
+        answer = socket_adapter.send_message(new_msg, wait_answer=True)
+        if answer['code'] != code.CODE_OK:
+            print('Error in response')
+            sys.exit()
+
+
+if __name__ == '__main__':
+    main()

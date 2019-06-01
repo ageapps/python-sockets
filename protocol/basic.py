@@ -1,4 +1,5 @@
 import json
+import socket
 
 class BasicProtocol(object):
     """ Basic protocol based on sending 
@@ -9,7 +10,7 @@ class BasicProtocol(object):
         self.encoding = encoding
         self.debug = debug
 
-    def get_formated_message(self, msg):
+    def get_formated_message(self, msg: str):
         msg_len = str(len(msg))
         if self.debug:
             print("Encoding message | length:{} data:{}".format(msg_len, msg))
@@ -36,14 +37,9 @@ class BasicProtocol(object):
             msg = json.loads(msg)
         
         return msg
-    
 
-    def receive_packet(self, buff_size):
-        if not self.receiver:
-            raise Exception("There was no receiver configured")
-            return
-        
-        result = self.receiver(buff_size)
+    def receive_packet(self, receive_fn, buff_size):
+        result = receive_fn(buff_size)
 
         address = None
         if isinstance(result, tuple):
@@ -53,18 +49,23 @@ class BasicProtocol(object):
         
         return msg, address
 
-    def receive(self):
+    def receive_from_socket(self, receive_fn):
+        """receive message using the given function by the client/server
+        
+        Raises:
+            Exception: Receiving
+        
+        Returns:
+            (data, address)
+        """
+
         # get header
-        msg_header, address = self.receive_packet(self.header_size)
+        msg_header, address = self.receive_packet(receive_fn, self.header_size)
         if not len(msg_header):
             raise Exception("Error receiving the header")
             return
         
         msg_len = int(self.decode(msg_header))
-        msg_data, address = self.receive_packet(msg_len)
+        msg_data, address = self.receive_packet(receive_fn, msg_len)
         data = self.decode(msg_data)
         return data, address
-
-
-    def set_receiver(self, f_receive):
-        self.receiver =f_receive

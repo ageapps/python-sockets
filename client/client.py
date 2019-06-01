@@ -49,3 +49,6 @@ class Client(object):
 
     def receive_message(self):
         return self.protocol.receive_from_socket(self.receiver_fn)
+
+    def stop(self):
+        self.client_socket.close()

@@ -14,13 +14,13 @@ class FragmentProtocol(object):
         self.fragmented_flag = 1
         self.debug = debug
 
-    def encode(self, msg):
+    def encode(self, msg: str) -> bytes:
         if self.debug:
             print("Encoding: {}".format(msg))
         assert isinstance(msg, str) , "Type of msg should be str: {}".format(type(msg))
         return bytes(msg, self.encoding)
 
-    def get_messages_to_send(self, msg):
+    def get_messages_to_send(self, msg) -> list:
         if not isinstance(msg, str):
             msg = json.dumps(msg)
                 
@@ -45,7 +45,7 @@ class FragmentProtocol(object):
             print("Sending fragments: {}".format(fragments))
         return fragments
 
-    def decode(self, msg_bytes):
+    def decode(self, msg_bytes: bytes) -> object:
         msg = str(msg_bytes.decode(self.encoding)).strip()
         if msg[0] == "{" or msg[0] == "[":
             msg = json.loads(msg)
@@ -64,7 +64,7 @@ class FragmentProtocol(object):
         
         return msg, address
 
-    def receive_from_socket(self, receive_fn):
+    def receive_from_socket(self, receive_fn) -> (object, tuple):
         """receive message using the given function by the client/server
         
         Raises:

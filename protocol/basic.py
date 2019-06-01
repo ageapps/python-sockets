@@ -10,7 +10,9 @@ class BasicProtocol(object):
         self.encoding = encoding
         self.debug = debug
 
-    def get_formated_message(self, msg: str):
+    def get_formated_message(self, msg: str) -> (str, str):
+        assert isinstance(msg, str), 'Type of input should be string: {}'.format(type(msg))
+        
         msg_len = str(len(msg))
         if self.debug:
             print("Encoding message | length:{} data:{}".format(msg_len, msg))
@@ -21,17 +23,17 @@ class BasicProtocol(object):
         header = msg_len.ljust(self.header_size)
         return msg, header
 
-    def encode(self, msg):
+    def encode(self, msg: str) -> bytes:
         return bytes(msg, self.encoding)
 
-    def get_messages_to_send(self, msg):
+    def get_messages_to_send(self, msg) -> list:
         if not isinstance(msg, str):
             msg = json.dumps(msg)
 
         data, header = self.get_formated_message(msg)
         return [self.encode(header), self.encode(data)]
 
-    def decode(self, msg_bytes):
+    def decode(self, msg_bytes: bytes) -> object:
         msg = msg_bytes.decode(self.encoding).strip()
         if msg[0] == "{" or msg[0] == "[":
             msg = json.loads(msg)
@@ -49,7 +51,7 @@ class BasicProtocol(object):
         
         return msg, address
 
-    def receive_from_socket(self, receive_fn):
+    def receive_from_socket(self, receive_fn) -> (object, tuple):
         """receive message using the given function by the client/server
         
         Raises:

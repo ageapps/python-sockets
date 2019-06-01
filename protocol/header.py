@@ -17,11 +17,11 @@ class HeaderProtocol(object):
         self.header_size = struct.calcsize(header_mask)
         self.debug = debug
 
-    def encode(self, values):
+    def encode(self, values: list) -> bytes:
         assert (self.header_elements == len(values)), "Input values are not the correct size: {} | should be: {}".format(len(values), self.header_elements) 
         return struct.pack(self.header_mask, *values)
 
-    def get_messages_to_send(self, values):
+    def get_messages_to_send(self, values: list) -> list:
         fragment = self.encode(values)
         if self.debug:
             print("Sending fragment: {}".format(fragment))
@@ -45,7 +45,7 @@ class HeaderProtocol(object):
             print("Received: {}".format(msg_bytes))
         return msg_bytes, address
 
-    def receive_from_socket(self, receive_fn):
+    def receive_from_socket(self, receive_fn) -> (object, tuple):
         """receive message using the given function by the client/server
         
         Raises:

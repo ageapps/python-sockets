@@ -25,9 +25,9 @@ def get_formated_message(msg, key, code=0):
 
 def main():
     proto = BasicProtocol()
-    socket_adapter = Client(PORT, host=HOST, udp=UDP_CLIENT, protocol=proto)
+    client = Client(PORT, host=HOST, udp=UDP_CLIENT, protocol=proto)
     hello_message = get_formated_message('Hello server','setup')
-    answer = socket_adapter.send_message(hello_message, wait_answer=True)
+    answer = client.send_message(hello_message, wait_answer=True)
     if answer['code'] != code.CODE_OK:
         print('Error in response')
         sys.exit()
@@ -37,11 +37,13 @@ def main():
     while True:
         time.sleep(2)
         new_msg = get_formated_message( time.time(), 'time')
-        answer = socket_adapter.send_message(new_msg, wait_answer=True)
+        answer = client.send_message(new_msg, wait_answer=True)
         if answer['code'] != code.CODE_OK:
             print('Error in response')
+            client.stop()
             sys.exit()
 
+    client.stop()
 
 if __name__ == '__main__':
     main()

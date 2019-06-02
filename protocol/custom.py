@@ -2,13 +2,15 @@ import json
 import struct
 import re
 
-class HeaderProtocol(object):
+
+class CustomProtocol(object):
     """ Protocol based on  max_packet_size in bytes
 
     The packet has the following structure
 
-    |           DATA        | FRAGMENT FLAG |
-    |   max_packet_size-1   |     1         |
+    |   status 1   |
+    |     step 4       |   weight0 4   |   weight1 4   |
+    |     weight2 4    |   weight3 4   |   weight4 4   |
     """
     def __init__(self, header_mask='! B i i i i i i', encoding='utf-8', debug=False):
         self.fragmented_flag = 1
@@ -18,7 +20,10 @@ class HeaderProtocol(object):
         self.debug = debug
 
     def encode(self, values: list) -> bytes:
-        assert (self.header_elements == len(values)), "Input values are not the correct size: {} | should be: {}".format(len(values), self.header_elements) 
+        assert ( len(values) <= self.header_elements), "Input values are not the correct size: {} | should be: {}".format(len(values), self.header_elements) 
+        if len(values) < self.header_elements:
+            padding = [0] * (self.header_elements-len(values))
+            values.extend(padding)
         return struct.pack(self.header_mask, *values)
 
     def get_messages_to_send(self, values: list) -> list:
@@ -29,11 +34,11 @@ class HeaderProtocol(object):
 
     def decode(self, msg_bytes):
         assert len(msg_bytes) == self.header_size, "Message received not correct size: {} | should be: {}".format(len(msg_bytes), self.header_size)
-        return struct.unpack(self.header_mask, msg_bytes)
+        return list(struct.unpack(self.header_mask, msg_bytes))
     
 
     def receive_packet(self, receive_fn):
-        result = receive_fn(self.max_packet_size)
+        result = receive_fn(self.header_size)
 
         address = None
         if isinstance(result, tuple):

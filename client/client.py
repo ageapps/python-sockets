@@ -20,7 +20,7 @@ class Client(object):
             s.settimeout(timeout)
             if not udp:
                 s.connect((self.host, self.port))
-            print('Starting socket | protocol: ' + self.protocol.__class__.__name__)
+            print('Starting {} socket | protocol: {}'.format(('UDP' if udp else 'TCP'), self.protocol.__class__.__name__))
         except socket.error as err:
             print('Failed to start socket | Error: {}'.format(err))
             raise
@@ -33,9 +33,9 @@ class Client(object):
         for msg in fragments:
             try:
                 if self.udp:
-                    self.client_socket.sendto(msg, (self.host, self.port))
+                    return self.client_socket.sendto(msg, (self.host, self.port))
                 else:
-                    self.client_socket.sendall(msg)
+                    return self.client_socket.sendall(msg)
             except socket.error as err:
                 print('Failed send message | Error: {}'.format(err))
                 raise

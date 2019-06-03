@@ -20,7 +20,7 @@ class Client(object):
             s.settimeout(timeout)
             if not udp:
                 s.connect((self.host, self.port))
-            print('Starting {} socket | protocol: {}'.format(('UDP' if udp else 'TCP'), self.protocol.__class__.__name__))
+            print('Starting {} socket | host: {}:{} | protocol: {}'.format(('UDP' if udp else 'TCP'), host,port, self.protocol.__class__.__name__))
         except socket.error as err:
             print('Failed to start socket | Error: {}'.format(err))
             raise
@@ -42,7 +42,7 @@ class Client(object):
 
         if wait_answer:
             answer, address = self.receive_message()
-            if  self.udp and address == (self.host, self.port):
+            if address != (self.host, self.port):
                 raise Exception(
                     "Error sending answer | Sender: {} Answer: {}".format((self.host, self.port), address))
             return answer

@@ -1,7 +1,7 @@
 import json
 import struct
 import re
-
+from LogManager import getLogger
 
 class CustomProtocol(object):
     """ Protocol based on  max_packet_size in bytes
@@ -18,6 +18,7 @@ class CustomProtocol(object):
         self.header_elements = len(re.sub('[^A-Za-z?]+', '', header_mask))
         self.header_size = struct.calcsize(header_mask)
         self.debug = debug
+        self.logger = getLogger(__name__, debug)
 
     def encode(self, values: list) -> bytes:
         assert ( len(values) <= self.header_elements), "Input values are not the correct size: {} | should be: {}".format(len(values), self.header_elements) 
@@ -29,7 +30,7 @@ class CustomProtocol(object):
     def get_messages_to_send(self, values: list) -> list:
         fragment = self.encode(values)
         if self.debug:
-            print("Sending fragment: {}".format(fragment))
+            self.logger.debug("Sending fragment: {}".format(fragment))
         return [fragment]
 
     def decode(self, msg_bytes):
@@ -47,7 +48,7 @@ class CustomProtocol(object):
             msg_bytes = result
         
         if self.debug:
-            print("Received: {}".format(msg_bytes))
+            self.logger.debug("Received: {}".format(msg_bytes))
         return msg_bytes, address
 
     def receive_from_socket(self, receive_fn) -> (object, tuple):

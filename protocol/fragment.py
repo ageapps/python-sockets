@@ -1,5 +1,6 @@
 import json
 import socket
+from LogManager import getLogger
 class FragmentProtocol(object):
     """ Protocol based on  max_packet_size in bytes
 
@@ -13,10 +14,12 @@ class FragmentProtocol(object):
         self.encoding = encoding
         self.fragmented_flag = 1
         self.debug = debug
+        self.logger = getLogger(__name__, debug)
+
 
     def encode(self, msg: str) -> bytes:
         if self.debug:
-            print("Encoding: {}".format(msg))
+            self.logger.debug("Encoding: {}".format(msg))
         assert isinstance(msg, str) , "Type of msg should be str: {}".format(type(msg))
         return bytes(msg, self.encoding)
 
@@ -42,7 +45,7 @@ class FragmentProtocol(object):
                 msg_bytes = msg_bytes[(self.max_packet_size-1):]
         
         if self.debug:
-            print("Sending fragments: {}".format(fragments))
+            self.logger.debug("Sending fragments: {}".format(fragments))
         return fragments
 
     def decode(self, msg_bytes: bytes) -> object:
@@ -85,7 +88,7 @@ class FragmentProtocol(object):
             
             msg_array = bytearray(msg_bytes)
             if self.debug:
-                print("Received | bytes:{} | data:{}".format(len(msg_array), msg_bytes))
+                self.logger.debug("Received | bytes:{} | data:{}".format(len(msg_array), msg_bytes))
             
             flag = 0
             if len(msg_array) == self.max_packet_size:

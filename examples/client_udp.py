@@ -3,11 +3,11 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 from client import Client
-from protocol import BasicProtocol
+from protocol import FragmentProtocol
 from protocol import code
 
 
-HOST = "localhost"
+HOST = "127.0.0.1"
 PORT = 12344
 QUEUE_SIZE = 5
 UDP_CLIENT = True
@@ -24,7 +24,7 @@ def get_formated_message(msg, key, code=0):
 
 
 def main():
-    proto = BasicProtocol()
+    proto = FragmentProtocol()
     client = Client(PORT, host=HOST, udp=UDP_CLIENT, protocol=proto)
     hello_message = get_formated_message('Hello server','setup')
     answer = client.send_message(hello_message, wait_answer=True)

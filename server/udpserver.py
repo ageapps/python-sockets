@@ -3,6 +3,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 from protocol import BasicProtocol
+from LogManager import getLogger
 
 class UDPServer(object):
     '''UDP Reliable Server
@@ -18,6 +19,8 @@ class UDPServer(object):
     def __init__(self, port,  host="127.0.0.1", debug=False, protocol=None):
         self.host = host
         self.port = port
+        self.logger = getLogger(__name__, debug)
+        
         if protocol is None:
             protocol = BasicProtocol(debug=debug)
         self.protocol = protocol
@@ -26,9 +29,9 @@ class UDPServer(object):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.bind((self.host, self.port))
-            print('UDP socket listening on {}:{} | protocol: {}'.format(self.host, self.port, self.protocol.__class__.__name__))
+            self.logger.info('UDP socket listening on {}:{} | protocol: {}'.format(self.host, self.port, self.protocol.__class__.__name__))
         except socket.error as err:
-            print('Failed to start socket | Error: {}'.format(err))
+            self.logger.error('Failed to start socket | Error: {}'.format(err))
             raise
 
         self.server_socket = s
@@ -62,7 +65,7 @@ class UDPServer(object):
                 b_sent = self.server_socket.sendto(msg, destination)
                 correct = correct and (b_sent > 0)
             except socket.error as err:
-                print('Failed send message | Error: {}'.format(err))
+                self.logger.error('Failed send message | Error: {}'.format(err))
                 raise
         
         if wait_answer:

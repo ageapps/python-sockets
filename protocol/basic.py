@@ -1,5 +1,6 @@
 import json
 import socket
+from LogManager import getLogger
 
 class BasicProtocol(object):
     """ Basic protocol based on sending 
@@ -9,15 +10,16 @@ class BasicProtocol(object):
         self.header_size = header_size
         self.encoding = encoding
         self.debug = debug
+        self.logger = getLogger(__name__, debug)
 
     def get_formated_message(self, msg: str) -> (str, str):
         assert isinstance(msg, str), 'Type of input should be string: {}'.format(type(msg))
         
         msg_len = str(len(msg))
         if self.debug:
-            print("Encoding message | length:{} data:{}".format(msg_len, msg))
+            self.logger.debug("Encoding message | length:{} data:{}".format(msg_len, msg))
         if len(msg_len) > self.header_size:
-            print("Message too long | Message: {}".format(msg))
+            self.logger.warning("Message too long | Message: {}".format(msg))
             return ""
 
         header = msg_len.ljust(self.header_size)

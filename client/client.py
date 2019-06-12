@@ -3,6 +3,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 from protocol import BasicProtocol
+from LogManager import getLogger
 
 
 class Client(object):
@@ -11,6 +12,7 @@ class Client(object):
         self.host = host
         self.port = port
         self.udp = udp
+        self.logger = getLogger(__name__, debug)
         if protocol is None:
             protocol = BasicProtocol(debug=debug)
         self.protocol = protocol
@@ -20,9 +22,9 @@ class Client(object):
             s.settimeout(timeout)
             if not udp:
                 s.connect((self.host, self.port))
-            print('Starting {} socket | host: {}:{} | protocol: {}'.format(('UDP' if udp else 'TCP'), self.host, self.port, self.protocol.__class__.__name__))
+            self.logger.info('Starting {} socket | host: {}:{} | protocol: {}'.format(('UDP' if udp else 'TCP'), self.host, self.port, self.protocol.__class__.__name__))
         except socket.error as err:
-            print('Failed to start socket | Error: {}'.format(err))
+            self.logger.error('Failed to start socket | Error: {}'.format(err))
             raise
 
         self.client_socket = s
@@ -38,7 +40,7 @@ class Client(object):
                 else:
                     sent += self.client_socket.sendall(msg)
             except socket.error as err:
-                print('Failed send message | Error: {}'.format(err))
+                self.logger.error('Failed send message | Error: {}'.format(err))
                 raise
             if sent <= 0:
                 raise Exception('Failed sending message {}'.format(msg))

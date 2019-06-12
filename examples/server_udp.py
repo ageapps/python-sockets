@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 from server import UDPServer
-from protocol import BasicProtocol
+from protocol import FragmentProtocol
 from protocol import code
 
 PORT = 12344
@@ -20,7 +20,7 @@ def get_formated_message(msg, key, code=0):
 
 
 def main():
-    proto = BasicProtocol()
+    proto = FragmentProtocol()
 
     server = UDPServer(PORT, protocol=proto)
     server.start()
